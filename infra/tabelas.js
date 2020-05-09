@@ -1,10 +1,11 @@
 class Tabelas {
-    init(conexao){
+    init(conexao) {
         this.conexao = conexao;
         this.criarAtendimentos();
+        this.criarPets();
     }
 
-    criarAtendimentos(){
+    criarAtendimentos() {
         const sql = `CREATE TABLE IF NOT EXISTS atendimentos 
         (
             id INT NOT NULL AUTO_INCREMENT,
@@ -18,9 +19,23 @@ class Tabelas {
             PRIMARY KEY(id)
         )`;
         this.conexao.query(sql, (err) => {
-            if(err) console.log(err);
+            if (err) console.log(err);
         });
     }
+
+    criarPets() {
+        const sql = `CREATE TABLE IF NOT EXISTS pets(
+            id INT NOT NULL AUTO_INCREMENT,
+            nome VARCHAR(50), 
+            imagem varchar(200),
+            PRIMARY KEY(id)
+        )`;
+
+        this.conexao.query(sql, (err, resultado) => {
+            if (err) console.log(err);
+        });
+    }
+
 }
 
 module.exports = new Tabelas();
