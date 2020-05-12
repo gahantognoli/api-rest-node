@@ -29,23 +29,16 @@ class Atendimento {
         }
     }
 
-    lista() {
+    async lista() {
         return atendimentoRepository.lista();
     }
 
-    obterPorId(id) {
-        return new Promise((resolve, reject) => {
-            let sql = 'SELECT * FROM atendimentos WHERE id = ?';
-            conexao.query(sql, id, (err, resultado) => {
-                if (err) reject(err);
-                else {
-                    resolve(resultado[0])
-                };
-            });
-        });
+    async obterPorId(id) {
+        return atendimentoRepository.obterPorId(id)
+            .then(resultado => resultado[0]);
     }
 
-    adiciona(atendimento) {
+    async adiciona(atendimento) {
         const dataCriacao = moment().format('YYYY-MM-DD HH:mm:ss');;
         const data = moment(atendimento.data, 'DD/MM/YYYY').format('YYYY-MM-DD HH:mm:ss');;
 
@@ -68,27 +61,38 @@ class Atendimento {
         }
     }
 
-    altera(id, atendimento) {
-        return new Promise((resolve, reject) => {
-            if (atendimento.data)
-                atendimento.data = moment(atendimento.data, 'DD/MM/YYYY').format('YYYY-MM-DD HH:mm:ss');;
+    async altera(id, atendimento) {
+        let dataCriacao = 0;
+        atendimentoRepository.obterPorId(id)
+            .then(resultado => {
+                dataCriacao = resultado[0].dataCriacao;
 
-            const sql = 'UPDATE atendimentos SET ? WHERE id = ?';
-            conexao.query(sql, [atendimento, id], (err, resultado) => {
-                if (err) reject(err);
-                else resolve(resultado);
-            });
-        });
+                const data = moment(atendimento.data, 'DD/MM/YYYY').format('YYYY-MM-DD HH:mm:ss');;
+
+                const parametros = {
+                    data: { data, dataCriacao },
+                    cliente: { tamanho: atendimento.cliente.length }
+                }
+
+                this.valida(parametros);
+                const temErros = this.erros.length;
+
+                if (temErros) return new Promise((resolve, reject) => reject(this.erros));
+                else {
+                    const atendimentoDatado = { ...atendimento, dataCriacao, data };
+                    console.log(atendimentoDatado);
+                    return atendimentoRepository.atualiza(atendimentoDatado, id)
+                        .then(resultado => {
+                            const id = resultado.insertId;
+                            return { ...atendimento, id };
+                        });
+                }
+            })
+            .catch(err => err);
     }
 
-    deleta(id) {
-        return new Promise((resolve, reject) => {
-            const sql = 'DELETE FROM atendimentos WHERE id = ?';
-            conexao.query(sql, id, (err, resultado) => {
-                if (err) reject(err);
-                else resolve(resultado);
-            });
-        });
+    async deleta(id) {
+        return atendimentoRepository.deleta(id);
     }
 }
 
