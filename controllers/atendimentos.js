@@ -16,7 +16,7 @@ module.exports = app => {
 
     app.post('/atendimentos', (req, res) => {
         atendimento.adiciona(req.body)
-            .then(() => res.status(201).json({ message: 'Atendimento criado com sucesso' }))
+            .then(atendimentoCadastrado => res.status(201).json(atendimentoCadastrado))
             .catch(err => res.status(400).json(err));
     });
 
